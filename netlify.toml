@@ -1,5 +1,8 @@
+[functions]
+directory = "netlify/functions"
+
 [build]
-  functions = "netlify/functions"
+publish = "public"
 
 [dev]
-  functions = "netlify/functions"
+functions = "netlify/functions"
