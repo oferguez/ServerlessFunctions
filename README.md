@@ -1,6 +1,13 @@
-# Serverless Functions
+# Deployment Status
 
-workbench for netlify serverless functions
+[![Netlify Status](https://api.netlify.com/api/v1/badges/7bbd95ea-f6e9-4b46-a793-f79e817f5214/deploy-status)](https://app.netlify.com/sites/oferguez/deploys)
+
+
+# Deployment Configuration
+
+https://app.netlify.com/sites/oferguez/configuration/general
+
+# Sample usage 
 
 https://oferguez.netlify.app/.netlify/functions/getTime
 
