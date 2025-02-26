@@ -1,15 +1,21 @@
 import OpenAI from "openai";
 
+const  headers = {
+    "Access-Control-Allow-Origin": "*",  // Allow all origins (or specify a domain instead of `*`)
+    "Access-Control-Allow-Methods": " POST",
+    "Access-Control-Allow-Headers": "Content-Type"
+};
+
 export async function handler(event) {
     const { words, targetLanguage } = JSON.parse(event.body);
     
     if (!words || words.length === 0) {
-        return { statusCode: 400, body: JSON.stringify({ error: "Words list cannot be empty." }) };
+        return { headers: headers, statusCode: 400, body: JSON.stringify({ error: "Words list cannot be empty." }) };
     }
 
     const hasKey = !!process.env.OPENAI_KEY;
     if (!hasKey) {
-        return { statusCode: 400, body: JSON.stringify({ error: "No OpenAPI Key" }) };
+        return {  headers: headers, statusCode: 400, body: JSON.stringify({ error: "No OpenAPI Key" }) };
     }
 
     const openai = new OpenAI({
@@ -67,12 +73,14 @@ export async function handler(event) {
         }
 
         return {
+            headers: headers, 
             statusCode: 200,
             body: JSON.stringify(JSON.parse(jsonMatch[0])),
         };
     } catch (error) {
         console.error("Error fetching translations:", error);
         return {
+            headers: headers, 
             statusCode: 500,
             body: JSON.stringify({ error: "Internal server error" }),
         };
