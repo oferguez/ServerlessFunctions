@@ -77,6 +77,8 @@ export async function handler(event) {
             stream: true, // 🛑 Streaming enabled
         });
 
+        const passThrough = new PassThrough();
+        
         // Process stream and forward chunks to PassThrough
         (async () => {
             for await (const chunk of stream) {
