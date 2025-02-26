@@ -7,7 +7,7 @@ const headers = {
 };
 
 export async function handler(event) {
-    console.log('fetch_tr_called');
+    console.log('FETCHER: fetch_tr_called');
     console.dir(event);
     // 🛑 Handle Preflight OPTIONS request
     if (event.httpMethod === "OPTIONS") {
@@ -22,12 +22,12 @@ export async function handler(event) {
     const { words, targetLanguage } = JSON.parse(event.body);
     
     if (!words || words.length === 0) {
-        console.log('empty words');
+        console.log('FETCHER: empty words');
         return { statusCode: 400, headers, body: JSON.stringify({ error: "Words list cannot be empty." }) };
     }
 
     if (!process.env.OPENAI_KEY) {
-        console.log('no key');
+        console.log('FETCHER: no valid openai key');
         return { statusCode: 400, headers, body: JSON.stringify({ error: "No OpenAI Key" }) };
     }
 
@@ -73,31 +73,31 @@ export async function handler(event) {
     `;
 
     try {
-        console.log('calling oai...');
+        console.log('FETCHER: calling oai...');
         const response = await openai.chat.completions.create({
             model: "o3-mini",
             messages: [{ role: "system", content: prompt }],
             max_tokens: 250,
             temperature: 0.7,
         });
-        console.log('oai done');
+        console.log('FETCHER: oai done');
 
         const textResponse = response.choices[0].message.content.trim();
         const jsonMatch = textResponse.match(/\[.*\]/s);
 
         if (!jsonMatch) {
-            console.log('no json match');
+            console.log('FETCHER: no json match');
             throw new Error("Failed to extract JSON from OpenAI response.");
         }
 
-        console.log('success');
+        console.log('FETCHER: success');
         return {
             statusCode: 200,
             headers,
             body: JSON.stringify(JSON.parse(jsonMatch[0])),
         };
     } catch (error) {
-        console.error("Error fetching translations:", error);
+        console.error("FETCHER: Error fetching translations:", error);
         return {
             statusCode: 500,
             headers,
