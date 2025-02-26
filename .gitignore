@@ -1,4 +1,5 @@
 .env
+obs
 # Logs
 logs
 *.log
