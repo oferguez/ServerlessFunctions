@@ -103,6 +103,8 @@ export async function handler(event) {
             passThrough.on('error', reject); // Handle stream errors
         });
 
+        console.log("FETCHER: Stream processing completed");
+
         return {
             statusCode: 200,
             headers: {
