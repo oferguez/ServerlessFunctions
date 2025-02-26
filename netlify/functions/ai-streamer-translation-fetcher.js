@@ -83,17 +83,25 @@ export async function handler(event) {
 
         // Process stream and forward chunks to PassThrough
         (async () => {
-            for await (const chunk of stream) {
-                const content = chunk.choices[0]?.delta?.content || '';
-                responseData += content; // Collect stream data
-                passThrough.write(content); // Handle OpenAI stream chunks
-                console.log(`FETCHER: Stream chunk of size ${content.length} received`);
+            try {
+                for await (const chunk of stream) {
+                    const content = chunk.choices[0]?.delta?.content || '';
+                    responseData += content; // Collect stream data
+                    passThrough.write(content); // Handle OpenAI stream chunks
+                    console.log(`FETCHER: Stream chunk of size ${content.length} received`);
+                }
+                passThrough.end(); // Close stream
+            } catch (streamError) {
+                console.error("FETCHER: Error during stream processing", streamError);
+                passThrough.end(); // Ensure stream is closed on error
             }
-            passThrough.end(); // Close stream
         })();
 
         // Wait for the stream to end and collect the data
-        await new Promise((resolve) => passThrough.on('end', resolve)); // Added to wait for stream end
+        await new Promise((resolve, reject) => {
+            passThrough.on('end', resolve);
+            passThrough.on('error', reject); // Handle stream errors
+        });
 
         return {
             statusCode: 200,
