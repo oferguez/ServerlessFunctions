@@ -77,13 +77,23 @@ export async function handler(event) {
             stream: true, // 🛑 Streaming enabled
         });
 
-        return new Response(stream, {
-            status: 200,
+        // Process stream and forward chunks to PassThrough
+        (async () => {
+            for await (const chunk of stream) {
+                passThrough.write(chunk.choices[0]?.delta?.content || ""); // Handle OpenAI stream chunks
+            }
+            passThrough.end(); // Close stream
+        })();
+
+        return {
+            statusCode: 200,
             headers: {
                 "Content-Type": "text/event-stream",
-                "Access-Control-Allow-Origin": "*",
+                ...headers,
             },
-        });
+            body: passThrough, // ✅ AWS Lambda-compatible streaming response
+            isBase64Encoded: false,
+        }
 
     } catch (error) {
         console.error("FETCHER: Error processing request", error);
