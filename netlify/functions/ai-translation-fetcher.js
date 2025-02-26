@@ -7,8 +7,11 @@ const headers = {
 };
 
 export async function handler(event) {
+    console.log('fetch_tr_called');
+    console.dir(event);
     // 🛑 Handle Preflight OPTIONS request
     if (event.httpMethod === "OPTIONS") {
+        console.log('OPT');
         return {
             statusCode: 204, // No Content
             headers: headers,
@@ -19,10 +22,12 @@ export async function handler(event) {
     const { words, targetLanguage } = JSON.parse(event.body);
     
     if (!words || words.length === 0) {
+        console.log('empty words');
         return { statusCode: 400, headers, body: JSON.stringify({ error: "Words list cannot be empty." }) };
     }
 
     if (!process.env.OPENAI_KEY) {
+        console.log('no key');
         return { statusCode: 400, headers, body: JSON.stringify({ error: "No OpenAI Key" }) };
     }
 
@@ -68,20 +73,24 @@ export async function handler(event) {
     `;
 
     try {
+        console.log('calling oai...');
         const response = await openai.chat.completions.create({
             model: "gpt-4o-mini",
             messages: [{ role: "system", content: prompt }],
             max_tokens: 2500,
             temperature: 0.7,
         });
+        console.log('oai done');
 
         const textResponse = response.choices[0].message.content.trim();
         const jsonMatch = textResponse.match(/\[.*\]/s);
 
         if (!jsonMatch) {
+            console.log('no json match');
             throw new Error("Failed to extract JSON from OpenAI response.");
         }
 
+        console.log('success');
         return {
             statusCode: 200,
             headers,
