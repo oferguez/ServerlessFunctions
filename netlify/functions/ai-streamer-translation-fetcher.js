@@ -1,4 +1,6 @@
 import OpenAI from "openai";
+import { PassThrough } from "stream";
+
 
 const headers = {
     "Access-Control-Allow-Origin": "*",  // Allow all origins (or specify your frontend URL)
@@ -103,7 +105,10 @@ export async function handler(event) {
         return {
             statusCode: 500,
             headers: { "Access-Control-Allow-Origin": "*" },
-            body: JSON.stringify({ error: "Internal server error", details: error.message, errorObj: JSON.stringify(error)}),
+            body: JSON.stringify({ 
+                error: "Internal server error", 
+                details: error.message, 
+                errorObj: JSON.stringify(error)}),
         };
     }
 }
