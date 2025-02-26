@@ -64,7 +64,7 @@ export async function handler(event) {
     \`\`\`
     Ensure the **unrelated words** are humorous but still understandable in the target language. Return **only** the JSON output without any additional text.
     Every word should be unique and not repeated in the output.
-    Every word should be capitalized.
+    Every word should have its first letter capitalized.
     `;
 
     try {
