@@ -1,25 +1,33 @@
 import OpenAI from "openai";
 
-const  headers = {
-    "Access-Control-Allow-Origin": "*",  // Allow all origins (or specify a domain instead of `*`)
-    "Access-Control-Allow-Methods": " POST",
+const headers = {
+    "Access-Control-Allow-Origin": "*",  // Allow all origins (or specify your frontend URL)
+    "Access-Control-Allow-Methods": "POST, OPTIONS",
     "Access-Control-Allow-Headers": "Content-Type"
 };
 
 export async function handler(event) {
+    // 🛑 Handle Preflight OPTIONS request
+    if (event.httpMethod === "OPTIONS") {
+        return {
+            statusCode: 204, // No Content
+            headers: headers,
+            body: ""
+        };
+    }
+
     const { words, targetLanguage } = JSON.parse(event.body);
     
     if (!words || words.length === 0) {
-        return { headers: headers, statusCode: 400, body: JSON.stringify({ error: "Words list cannot be empty." }) };
+        return { statusCode: 400, headers, body: JSON.stringify({ error: "Words list cannot be empty." }) };
     }
 
-    const hasKey = !!process.env.OPENAI_KEY;
-    if (!hasKey) {
-        return {  headers: headers, statusCode: 400, body: JSON.stringify({ error: "No OpenAPI Key" }) };
+    if (!process.env.OPENAI_KEY) {
+        return { statusCode: 400, headers, body: JSON.stringify({ error: "No OpenAI Key" }) };
     }
 
     const openai = new OpenAI({
-        apiKey: process.env.OPENAI_KEY // ✅ Secure API Key
+        apiKey: process.env.OPENAI_KEY
     });
 
     const prompt = `
@@ -32,7 +40,7 @@ export async function handler(event) {
 
     For each word w_i:
     1. **correct_i** → The **exact translation** of w_i into the target language. When target language equals source language, provide the best synonym you can find.
-    2. **related_i** → A **related but incorrect translation**, meaning it is connected to w_i but is NOT the correct translation.
+    2. **related_i** → A **related but incorrect translation**, meaning it is connected to w_i but is NOT the correct translation. It should still be a word that is quite different than the correct answer, so a 6 yo can diffrentitae easily between them.
     3. **other_i1** and **other_i2** → Two **funny words** in the target language that are completely **unrelated** to w_i.
 
     Return the output as a structured list of objects in JSON format:
@@ -55,6 +63,8 @@ export async function handler(event) {
     ]
     \`\`\`
     Ensure the **unrelated words** are humorous but still understandable in the target language. Return **only** the JSON output without any additional text.
+    Every word should be unique and not repeated in the output.
+    Every word should be capitalized.
     `;
 
     try {
@@ -73,15 +83,15 @@ export async function handler(event) {
         }
 
         return {
-            headers: headers, 
             statusCode: 200,
+            headers,
             body: JSON.stringify(JSON.parse(jsonMatch[0])),
         };
     } catch (error) {
         console.error("Error fetching translations:", error);
         return {
-            headers: headers, 
             statusCode: 500,
+            headers,
             body: JSON.stringify({ error: "Internal server error" }),
         };
     }
