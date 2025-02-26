@@ -1,7 +1,6 @@
 import OpenAI from "openai";
 import { PassThrough } from "stream";
 
-
 const headers = {
     "Access-Control-Allow-Origin": "*",  // Allow all origins (or specify your frontend URL)
     "Access-Control-Allow-Methods": "POST, OPTIONS",
@@ -80,23 +79,29 @@ export async function handler(event) {
         });
 
         const passThrough = new PassThrough();
-        
+        let responseData = ''; // Added to collect stream data
+
         // Process stream and forward chunks to PassThrough
         (async () => {
             for await (const chunk of stream) {
-                passThrough.write(chunk.choices[0]?.delta?.content || ""); // Handle OpenAI stream chunks
+                const content = chunk.choices[0]?.delta?.content || '';
+                responseData += content; // Collect stream data
+                passThrough.write(content); // Handle OpenAI stream chunks
+                console.log(`FETCHER: Stream chunk of size ${content.length} received`);
             }
             passThrough.end(); // Close stream
         })();
 
+        // Wait for the stream to end and collect the data
+        await new Promise((resolve) => passThrough.on('end', resolve)); // Added to wait for stream end
+
         return {
             statusCode: 200,
             headers: {
-                "Content-Type": "text/event-stream",
+                "Content-Type": "application/json",
                 ...headers,
             },
-            body: passThrough, // ✅ AWS Lambda-compatible streaming response
-            isBase64Encoded: false,
+            body: responseData, // Return collected response data as string
         }
 
     } catch (error) {
