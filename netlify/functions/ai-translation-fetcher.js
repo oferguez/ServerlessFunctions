@@ -75,9 +75,9 @@ export async function handler(event) {
     try {
         console.log('calling oai...');
         const response = await openai.chat.completions.create({
-            model: "gpt-4o-mini",
+            model: "gpt-3.5-turbo",
             messages: [{ role: "system", content: prompt }],
-            max_tokens: 2500,
+            max_tokens: 250,
             temperature: 0.7,
         });
         console.log('oai done');
