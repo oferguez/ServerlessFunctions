@@ -103,7 +103,7 @@ export async function handler(event) {
         return {
             statusCode: 500,
             headers: { "Access-Control-Allow-Origin": "*" },
-            body: JSON.stringify({ error: "Internal server error", details: error.message, errorObj: error}),
+            body: JSON.stringify({ error: "Internal server error", details: error.message, errorObj: JSON.stringify(error)}),
         };
     }
 }
