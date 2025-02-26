@@ -45,7 +45,7 @@ export async function handler(event) {
 
     For each word w_i:
     1. **correct_i** → The **exact translation** of w_i into the target language. When target language equals source language, provide the best synonym you can find.
-    2. **related_i** → A **related but incorrect translation**, meaning it is connected to w_i but is NOT the correct translation. It should still be a word that is quite different than the correct answer, so a 6 yo can diffrentitae easily between them.
+    2. **related_i** → A **random unrelated and incorrect translation**, meaning is NOT the correct translation. 
     3. **other_i1** and **other_i2** → Two **funny words** in the target language that are completely **unrelated** to w_i.
 
     Return the output as a structured list of objects in JSON format:
@@ -75,9 +75,9 @@ export async function handler(event) {
     try {
         console.log('FETCHER: calling oai...');
         const response = await openai.chat.completions.create({
-            model: "o3-mini",
+            model: "gpt-4o-mini",
             messages: [{ role: "system", content: prompt }],
-            max_tokens: 250,
+            max_tokens: 2500,
             temperature: 0.7,
         });
         console.log('FETCHER: oai done');
